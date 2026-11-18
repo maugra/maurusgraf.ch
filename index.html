@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>maurusgraf.ch — loading… (allegedly)</title>
+<meta name="description" content="Something is coming. Probably. Eventually.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚧</text></svg>">
+<style>
+  :root {
+    --bg: #0f1115;
+    --fg: #e8e6e3;
+    --muted: #8a8f98;
+    --accent: #ff4d3d;   /* Swiss red */
+    --ok: #3ddc84;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    overflow: hidden;
+  }
+  .wrap { width: min(640px, 100%); }
+  h1 {
+    font-size: clamp(28px, 6vw, 48px);
+    line-height: 1.1; margin: 0 0 12px; letter-spacing: -0.02em;
+  }
+  h1 .domain { color: var(--accent); }
+  .sub { color: var(--muted); margin: 0 0 36px; font-size: 15px; line-height: 1.6; }
+
+  .bar {
+    height: 14px; border: 1px solid #2a2e36; border-radius: 999px;
+    overflow: hidden; background: #161920;
+  }
+  .fill {
+    height: 100%; width: 0%;
+    background: repeating-linear-gradient(45deg, var(--accent) 0 10px, #e0402f 10px 20px);
+    background-size: 28px 28px;
+    animation: stripes 0.8s linear infinite;
+    transition: width 0.4s ease;
+  }
+  @keyframes stripes { to { background-position: 28px 0; } }
+
+  .meta {
+    display: flex; justify-content: space-between;
+    font-size: 13px; color: var(--muted); margin-top: 10px; gap: 16px;
+  }
+  #status::before { content: "> "; color: var(--ok); }
+  #pct { font-variant-numeric: tabular-nums; flex-shrink: 0; }
+
+  button {
+    margin-top: 36px;
+    font: inherit; font-size: 14px;
+    background: transparent; color: var(--fg);
+    border: 1px solid #3a3f49; border-radius: 8px;
+    padding: 10px 16px; cursor: pointer;
+    transition: border-color .2s, transform .1s;
+  }
+  button:hover { border-color: var(--accent); }
+  button:active { transform: scale(0.97); }
+  #reply { margin-top: 14px; min-height: 1.4em; font-size: 13px; color: var(--muted); }
+
+  footer { margin-top: 56px; font-size: 12px; color: #555b66; }
+
+  .shake { animation: shake .35s; }
+  @keyframes shake {
+    20%, 60% { transform: translateX(-6px); }
+    40%, 80% { transform: translateX(6px); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .fill { animation: none; }
+  }
+</style>
+</head>
+<body>
+  <main class="wrap" id="wrap">
+    <h1>Something great is coming to <span class="domain">maurusgraf.ch</span></h1>
+    <p class="sub">
+      Right now, though, this website is mostly a promise.<br>
+      It's being built with care, caffeine, and a questionable number of open tabs.
+    </p>
+
+    <div class="bar" role="progressbar" aria-label="Website progress" aria-valuemin="0" aria-valuemax="100">
+      <div class="fill" id="fill"></div>
+    </div>
+    <div class="meta">
+      <span id="status">Booting up…</span>
+      <span id="pct">0%</span>
+    </div>
+
+    <button id="speed" type="button">🚀 Speed it up</button>
+    <div id="reply" aria-live="polite"></div>
+
+    <footer>© <span id="year"></span> Maurus Graf · Proudly hosted on a server that is also waiting.</footer>
+  </main>
+
+<script>
+  const codingExcuses = [
+    "Converting coffee into code ☕ → 💻",
+    "Centering a div (attempt #47)",
+    "Reticulating splines",
+    "Waiting for the SBB to be late (still waiting)",
+    "Asking Stack Overflow, getting closed as duplicate",
+    "Naming variables: thing, thing2, finalThing",
+    "Fixing the bug that fixed the other bug",
+    "Explaining to the compiler what I meant",
+    "Downloading more RAM",
+    "Polishing pixels with a tiny cloth",
+    "git commit -m \"stuff\"",
+    "Rewriting it in Rust (just kidding)",
+    "Adding a dark mode to the dark mode",
+    "Melting cheese for the fondue backend 🧀",
+    "Writing tests (no, really)",
+    "Turning it off and on again",
+    "It works on my machine ✓"
+  ];
+
+  const hobbyExcuses = [
+    "Out skiing ⛷️",
+    "Out cycling 🚴",
+    "Out climbing 🧗",
+    "Fixing a flat tire",
+    "Fell off the crux. Trying again",
+    "Waiting for the skin on my fingertips to grow back"
+  ];
+
+  function shuffle(a) {
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  // Mostly coding excuses, with a hobby one slipped in every 4–6 lines
+  shuffle(codingExcuses);
+  shuffle(hobbyExcuses);
+  const statuses = [];
+  let h = 0, gap = 4 + Math.floor(Math.random() * 3);
+  codingExcuses.forEach((e, i) => {
+    statuses.push(e);
+    if (--gap === 0 && i < codingExcuses.length - 1) {
+      statuses.push(hobbyExcuses[h++ % hobbyExcuses.length]);
+      gap = 4 + Math.floor(Math.random() * 3);
+    }
+  });
+
+  const replies = [
+    "Nice try. Progress has been reset for motivational purposes.",
+    "That button is purely decorative. Like my gym membership.",
+    "Speeding up… done. It is now 0.0001% faster.",
+    "Request forwarded to management. Management is also me.",
+    "Have you tried being patient? It's like a feature.",
+    "Okay okay. Pressing it harder won't help either.",
+    "Fine. I'll add 'make website' to my to-do list. Again.",
+    "You've unlocked: absolutely nothing. Congrats!",
+    "Error 418: I'm a teapot, not a website (yet).",
+    "Out of office: skiing / cycling / climbing. Please hold."
+  ];
+
+  const fill = document.getElementById("fill");
+  const pct = document.getElementById("pct");
+  const status = document.getElementById("status");
+  const bar = document.querySelector(".bar");
+  const reply = document.getElementById("reply");
+  const wrap = document.getElementById("wrap");
+  document.getElementById("year").textContent = new Date().getFullYear();
+
+  let progress = 0;
+  let si = -1;
+  let clicks = 0;
+
+  function render() {
+    const p = Math.min(progress, 99);
+    fill.style.width = p + "%";
+    pct.textContent = p.toFixed(p >= 99 ? 0 : 0) + "%";
+    bar.setAttribute("aria-valuenow", Math.round(p));
+  }
+
+  function nextStatus() {
+    si = (si + 1) % statuses.length;
+    status.textContent = statuses[si];
+  }
+
+  // Progress creeps up, slows down near the end, gets stuck at 99%, then gives up and restarts.
+  function tick() {
+    if (progress < 99) {
+      const remaining = 99 - progress;
+      progress += Math.max(0.15, Math.random() * remaining * 0.08);
+      if (progress > 99) progress = 99;
+      render();
+      setTimeout(tick, 300 + Math.random() * 500);
+    } else {
+      status.textContent = "Almost there… just one more thing…";
+      setTimeout(() => {
+        status.textContent = "Nope. Starting over. 🙃";
+        setTimeout(() => { progress = 0; render(); nextStatus(); tick(); }, 1600);
+      }, 3500);
+    }
+  }
+
+  setInterval(() => { if (progress < 99) nextStatus(); }, 2600);
+
+  document.getElementById("speed").addEventListener("click", () => {
+    clicks++;
+    reply.textContent = replies[(clicks - 1) % replies.length];
+    if (clicks % 3 === 0) {
+      progress = Math.max(0, progress - 25);
+      render();
+    }
+    wrap.classList.remove("shake");
+    void wrap.offsetWidth;
+    wrap.classList.add("shake");
+  });
+
+  nextStatus();
+  render();
+  tick();
+</script>
+</body>
+</html>
